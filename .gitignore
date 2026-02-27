@@ -1,0 +1,7 @@
+*.pyc
+*.egg-info
+build
+docs-for-ai
+**/__pycache__
+.claude
+CLAUDE.md
