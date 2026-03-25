@@ -11,8 +11,18 @@ class SeeedB601DMLeader(SeeedB601LeaderBase):
     config_class = SeeedB601DMLeaderConfig
     name = "seeed_b601_dm_leader"
 
+    motor_model_mapping = {
+        "shoulder_pan":  "dm4340p",
+        "shoulder_lift": "dm4340p",
+        "elbow_flex":    "dm4340p",
+        "wrist_flex":    "dm4310",
+        "wrist_roll":    "dm4310",
+        "wrist_yaw":     "dm4310",
+        "gripper":       "dm4310",
+    }
+
     def _add_motors_to_bus(self):
         for motor_name, (send_id, recv_id) in self.config.motor_can_ids.items():
-            motor_type_str = self.config.motor_models[motor_name]
+            motor_type_str = self.motor_model_mapping[motor_name]
             model_str = motor_type_str.upper().replace("DM", "")
             self.motors[motor_name] = self.bus.add_damiao_motor(send_id, recv_id, model_str)

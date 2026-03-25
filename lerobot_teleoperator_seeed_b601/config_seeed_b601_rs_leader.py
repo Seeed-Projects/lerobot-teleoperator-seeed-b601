@@ -11,12 +11,12 @@ class SeeedB601RSLeaderConfig(TeleoperatorConfig, SeeedB601LeaderConfigBase):
     # Placeholder for RobStride specific config
     motor_models: dict[str, str] = field(
         default_factory=lambda: {
-            "joint_1": "04",
-            "joint_2": "04",
-            "joint_3": "04",
-            "joint_4": "04",
-            "joint_5": "04",
-            "joint_6": "04",
-            "gripper": "04",
+            "shoulder_pan":  "04",
+            "shoulder_lift": "04",
+            "elbow_flex":    "04",
+            "wrist_flex":    "04",
+            "wrist_roll":    "04",
+            "wrist_yaw":     "04",
+            "gripper":       "04",
         }
     )

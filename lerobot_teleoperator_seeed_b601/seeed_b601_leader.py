@@ -26,13 +26,13 @@ class SeeedB601LeaderConfigBase:
     dm_serial_baud: int = 921600
     motor_can_ids: dict[str, tuple[int, int]] = field(
         default_factory=lambda: {
-            "joint_1": (0x01, 0x11),
-            "joint_2": (0x02, 0x12),
-            "joint_3": (0x03, 0x13),
-            "joint_4": (0x04, 0x14),
-            "joint_5": (0x05, 0x15),
-            "joint_6": (0x06, 0x16),
-            "gripper": (0x07, 0x17),
+            "shoulder_pan":  (0x01, 0x11),
+            "shoulder_lift": (0x02, 0x12),
+            "elbow_flex":    (0x03, 0x13),
+            "wrist_flex":    (0x04, 0x14),
+            "wrist_roll":    (0x05, 0x15),
+            "wrist_yaw":     (0x06, 0x16),
+            "gripper":       (0x07, 0x17),
         }
     )
     motor_models: dict[str, str] = field(default_factory=dict)
@@ -158,11 +158,11 @@ class SeeedB601LeaderBase(Teleoperator):
     def configure(self) -> None:
         """Configure motors for manual teleoperation (disable torque)."""
         if self.config.manual_control:
-            for motor in self.motors.values():
-                motor.disable()
+            self.bus.disable_all()
         else:
+            self.bus.enable_all()
+            time.sleep(0.3)  # Short delay to ensure motors are enabled before setting mode
             for motor in self.motors.values():
-                motor.enable()
                 motor.ensure_mode(MotorBridgeMode.MIT)
 
     def get_action(self) -> RobotAction:
@@ -205,10 +205,13 @@ class SeeedB601LeaderBase(Teleoperator):
         if not self.is_connected:
             raise DeviceNotConnectedError(f"{self} is not connected.")
 
-        if self.config.manual_control:
-            for motor in self.motors.values():
+        for motor in self.motors.values():
+            if self.config.manual_control:
                 motor.disable()
-                
+            motor.clear_error()
+            motor.close()
+        
+        self.bus.close_bus()
         self.bus.close()
         self.bus = None
 

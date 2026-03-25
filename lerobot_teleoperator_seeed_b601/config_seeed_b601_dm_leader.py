@@ -10,12 +10,12 @@ class SeeedB601DMLeaderConfig(TeleoperatorConfig, SeeedB601LeaderConfigBase):
     
     motor_models: dict[str, str] = field(
         default_factory=lambda: {
-            "joint_1": "dm4310",  # Base (DM4310)
-            "joint_2": "dm4340",  # Shoulder (DM4340)
-            "joint_3": "dm4340",  # Elbow (DM4340)
-            "joint_4": "dm4310",  # Wrist 1 (DM4310)
-            "joint_5": "dm4310",  # Wrist 2 (DM4310)
-            "joint_6": "dm4310",  # Wrist 3 (DM4310)
-            "gripper": "dm4310",  # Gripper (DM4310)
+            "shoulder_pan":  "dm4310",  # Base (DM4310)
+            "shoulder_lift": "dm4340",  # Shoulder (DM4340)
+            "elbow_flex":    "dm4340",  # Elbow (DM4340)
+            "wrist_flex":    "dm4310",  # Wrist 1 (DM4310)
+            "wrist_roll":    "dm4310",  # Wrist 2 (DM4310)
+            "wrist_yaw":     "dm4310",  # Wrist 3 (DM4310)
+            "gripper":       "dm4310",  # Gripper (DM4310)
         }
     )
