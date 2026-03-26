@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=61", "setuptools-scm[toml]>=8", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "lerobot_teleoperator_seeed_b601"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Seeed reBot Arm B601 Teleoperator integration with LeRobot"
 readme = "README.md"
 authors = [
@@ -26,3 +26,7 @@ dependencies = [
 where = ["."]
 include = ["lerobot_teleoperator_seeed_b601"]
 exclude = ["*.egg-info"]
+
+[tool.setuptools_scm]
+tag_regex = "^v(?P<version>\\d+\\.\\d+\\.\\d+)$"
+fallback_version = "0.0.0"
