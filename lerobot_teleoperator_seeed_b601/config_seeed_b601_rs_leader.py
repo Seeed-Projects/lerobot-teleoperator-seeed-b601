@@ -8,15 +8,4 @@ from .seeed_b601_leader import SeeedB601LeaderConfigBase
 class SeeedB601RSLeaderConfig(TeleoperatorConfig, SeeedB601LeaderConfigBase):
     """Configuration for Seeed B601-RS Leader Arm."""
     
-    # Placeholder for RobStride specific config
-    motor_models: dict[str, str] = field(
-        default_factory=lambda: {
-            "shoulder_pan":  "04",
-            "shoulder_lift": "04",
-            "elbow_flex":    "04",
-            "wrist_flex":    "04",
-            "wrist_roll":    "04",
-            "wrist_yaw":     "04",
-            "gripper":       "04",
-        }
-    )
+    pass

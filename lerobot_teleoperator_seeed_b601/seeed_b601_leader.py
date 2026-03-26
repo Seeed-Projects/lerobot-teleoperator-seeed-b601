@@ -12,11 +12,14 @@ from lerobot.utils.errors import DeviceAlreadyConnectedError, DeviceNotConnected
 
 logger = logging.getLogger(__name__)
 
+LONG_TIMEOUT_SEC = 0.1
+MEDIUM_TIMEOUT_SEC = 0.01
+
 @dataclass
 class SeeedB601LeaderConfigBase:
     """Base configuration for the Seeed B601 Leader arm."""
     port: str
-    manual_control: bool = True
+
     # CAN adapter type:
     #   "socketcan"  - SocketCAN based adapters (PCAN, slcan, embedded can controller, etc.)
     #   "damiao"     - Damiao dedicated serial bridge
@@ -95,17 +98,19 @@ class SeeedB601LeaderBase(Teleoperator):
         
         self._add_motors_to_bus()
 
-        if not self.is_calibrated and calibrate:
-            logger.info(
-                "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
-            )
-            self.calibrate()
+        # if not self.is_calibrated and calibrate:
+        #     logger.info(
+        #         "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
+        #     )
+        #     self.calibrate()
+        self.calibrate()
+
+        # if self.is_calibrated:
+        #     for motor in self.motors.values():
+        #         motor.set_zero_position()
+        #         time.sleep(LONG_TIMEOUT_SEC)
 
         self.configure()
-
-        if self.is_calibrated:
-            for motor in self.motors.values():
-                motor.set_zero_position()
 
         logger.info(f"{self} connected.")
 
@@ -116,33 +121,32 @@ class SeeedB601LeaderBase(Teleoperator):
 
     def calibrate(self) -> None:
         """Calibration procedure for B601."""
-        if self.calibration:
-            user_input = input(
-                f"Press ENTER to use provided calibration file associated with the id {self.id}, or type 'c' and press ENTER to run calibration: "
-            )
-            if user_input.strip().lower() != "c":
-                logger.info(f"Using calibration file associated with the id {self.id}")
-                return
+        # if self.calibration:
+        #     user_input = input(
+        #         f"Press ENTER to use provided calibration file associated with the id {self.id}, or type 'c' and press ENTER to run calibration: "
+        #     )
+        #     if user_input.strip().lower() != "c":
+        #         logger.info(f"Using calibration file associated with the id {self.id}")
+        #         return
 
         logger.info(f"\nRunning calibration for {self}")
         
-        if self.config.manual_control:
-            for motor in self.motors.values():
-                motor.disable()
+        self.bus.disable_all()
 
-        input(
+        print(
             "\nCalibration: Set Zero Position\n"
-            "Position the B601 arm in the following configuration:\n"
-            "  - All joints at mechanical zero marks (refer to B601 manual)\n"
-            "  - Gripper closed\n"
-            "Press ENTER when ready..."
+            "Please MANUALLY move the robot to its ZERO POSITION, and close its gripper.\n"
+            "Reference the B601 manual for Zero Pose (generally the default sit-down position).\n"
         )
+        input("Press ENTER when ready...")
 
         for motor in self.motors.values():
             motor.set_zero_position()
+            time.sleep(LONG_TIMEOUT_SEC)
+
         logger.info("Arm zero position set.")
 
-        logger.info("Setting range: -90° to +90° by default for all joints")
+        # logger.info("Setting range: -90° to +90° by default for all joints")
         for motor_name, (send_id, recv_id) in self.config.motor_can_ids.items():
             self.calibration[motor_name] = MotorCalibration(
                 id=send_id,
@@ -153,17 +157,23 @@ class SeeedB601LeaderBase(Teleoperator):
             )
 
         self._save_calibration()
-        print(f"Calibration saved to {self.calibration_fpath}")
+        # print(f"Calibration saved to {self.calibration_fpath}")
 
     def configure(self) -> None:
         """Configure motors for manual teleoperation (disable torque)."""
-        if self.config.manual_control:
-            self.bus.disable_all()
-        else:
-            self.bus.enable_all()
-            time.sleep(0.3)  # Short delay to ensure motors are enabled before setting mode
-            for motor in self.motors.values():
-                motor.ensure_mode(MotorBridgeMode.MIT)
+        self.bus.enable_all()
+        num_retry = 9
+        for motor_name, motor in self.motors.items():
+            for _ in range(num_retry + 1):
+                try:
+                    motor.ensure_mode(MotorBridgeMode.MIT)
+                    break
+                except Exception as e:
+                    if _ == num_retry:
+                        raise e
+                    time.sleep(MEDIUM_TIMEOUT_SEC)
+        
+            logger.info(f"{motor_name} ensure mode MIT")
 
     def get_action(self) -> RobotAction:
         """Reads all motor states (pos/vel/torque)."""
@@ -174,11 +184,14 @@ class SeeedB601LeaderBase(Teleoperator):
 
         action_dict: dict[str, Any] = {}
 
-        if self.config.manual_control:
-            for motor in self.motors.values():
-                motor.request_feedback()
-                
-        self.bus.poll_feedback_once()
+        # Request and poll feedback from motorbridge
+        for motor in self.motors.values():
+            motor.request_feedback()
+
+        try:
+            self.bus.poll_feedback_once()
+        except:
+            logger.warning(f"can bus poll feedback failed.")
 
         for motor_name, motor in self.motors.items():
             state = motor.get_state()
@@ -206,9 +219,7 @@ class SeeedB601LeaderBase(Teleoperator):
             raise DeviceNotConnectedError(f"{self} is not connected.")
 
         for motor in self.motors.values():
-            if self.config.manual_control:
-                motor.disable()
-            motor.clear_error()
+            motor.disable()
             motor.close()
         
         self.bus.close_bus()
