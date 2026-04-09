@@ -59,8 +59,8 @@ class SeeedB601LeaderBase(Teleoperator):
         features: dict[str, type] = {}
         for motor in self.motor_names:
             features[f"{motor}.pos"] = float
-            # features[f"{motor}.vel"] = float
-            # features[f"{motor}.torque"] = float
+            features[f"{motor}.vel"] = float
+            features[f"{motor}.torque"] = float
         return features
 
     @property
@@ -98,11 +98,12 @@ class SeeedB601LeaderBase(Teleoperator):
         
         self._add_motors_to_bus()
 
-        if not self.is_calibrated and calibrate:
-            logger.info(
-                "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
-            )
-            self.calibrate()
+        # if not self.is_calibrated and calibrate:
+        #     logger.info(
+        #         "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
+        #     )
+        #     self.calibrate()
+        self.calibrate()
 
         # if self.is_calibrated:
         #     for motor in self.motors.values():
