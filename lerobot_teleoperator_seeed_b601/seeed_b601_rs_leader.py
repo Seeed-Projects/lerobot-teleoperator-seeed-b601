@@ -16,8 +16,8 @@ class SeeedB601RSLeader(SeeedB601LeaderBase):
         "shoulder_lift": "rs-04",
         "elbow_flex":    "rs-04",
         "wrist_flex":    "rs-02",
-        "wrist_roll":    "rs-02",
         "wrist_yaw":     "rs-02",
+        "wrist_roll":    "rs-02",
         "gripper":       "rs-02",
     }
 

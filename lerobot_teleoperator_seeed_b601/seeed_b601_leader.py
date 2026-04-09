@@ -33,8 +33,8 @@ class SeeedB601LeaderConfigBase:
             "shoulder_lift": (0x02, 0x12),
             "elbow_flex":    (0x03, 0x13),
             "wrist_flex":    (0x04, 0x14),
-            "wrist_roll":    (0x05, 0x15),
-            "wrist_yaw":     (0x06, 0x16),
+            "wrist_yaw":     (0x05, 0x15),
+            "wrist_roll":    (0x06, 0x16),
             "gripper":       (0x07, 0x17),
         }
     )
@@ -59,8 +59,8 @@ class SeeedB601LeaderBase(Teleoperator):
         features: dict[str, type] = {}
         for motor in self.motor_names:
             features[f"{motor}.pos"] = float
-            features[f"{motor}.vel"] = float
-            features[f"{motor}.torque"] = float
+            # features[f"{motor}.vel"] = float
+            # features[f"{motor}.torque"] = float
         return features
 
     @property
@@ -98,12 +98,11 @@ class SeeedB601LeaderBase(Teleoperator):
         
         self._add_motors_to_bus()
 
-        # if not self.is_calibrated and calibrate:
-        #     logger.info(
-        #         "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
-        #     )
-        #     self.calibrate()
-        self.calibrate()
+        if not self.is_calibrated and calibrate:
+            logger.info(
+                "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
+            )
+            self.calibrate()
 
         # if self.is_calibrated:
         #     for motor in self.motors.values():

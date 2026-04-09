@@ -16,8 +16,8 @@ class SeeedB601DMLeader(SeeedB601LeaderBase):
         "shoulder_lift": "dm4340p",
         "elbow_flex":    "dm4340p",
         "wrist_flex":    "dm4310",
-        "wrist_roll":    "dm4310",
         "wrist_yaw":     "dm4310",
+        "wrist_roll":    "dm4310",
         "gripper":       "dm4310",
     }
 
